@@ -1,14 +1,52 @@
 'use client'
-import Image from "next/image"
-// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import { faBarsStaggered } from "@fortawesome/free-solid-svg-icons";
-import { useState } from 'react'
-import Login from "./Login";
-import {useDisclosure} from '@nextui-org/use-disclosure'
 
+import Image from "next/image"
+import { useState, useEffect } from 'react'
+import Login from "./Login";
+import { useDisclosure } from '@nextui-org/use-disclosure'
+import UserDropDown from './UserDropDown'
+import ModalManager from './ModalManager'
+import { useAppSelector,useAppDispatch } from "@/lib/hooks";
+import { checkLogin } from "@/lib/features/user.slice";
+import { resetState } from "@/lib/features/user.slice";
+import ModalChangePassword from './ModalChangePassword'
+import {getUser} from '@/lib/features/user.slice'
+import {useRouter} from 'next/navigation'
+import {useFormik} from 'formik'
+import * as yup from 'yup'
 export default function Header() {
     const [isOpenLogin, setIsOpenLogin] = useState(false)
-    const {isOpen,onOpen,onOpenChange} = useDisclosure()
+    const { isOpen, onOpen, onOpenChange } = useDisclosure()
+    const [isLogged, setIsLogged] = useState(false)
+    const [isModal,setIsModal] = useState(false)
+    const [searchValue,setSearchValue] = useState("")
+const [isChangePassword,setIsChangePassword] = useState(false)
+    const router = useRouter()
+  const dispatch = useAppDispatch()
+
+  
+  useEffect(()=>{
+
+      dispatch(checkLogin())
+  },[])
+    const user: any = useAppSelector((state) => state.userReducer)
+    useEffect(() => {
+        
+        if (user.isSuccess && user.isLogin) setIsLogged(true)
+        if (user.isSuccess && user.isCheck) setIsLogged(true)
+        if (user.isSuccess && user.isCheck) {setIsLogged(true);dispatch(getUser())}
+        if(user.isCheck && user.isError) {
+            localStorage.clear()
+        }
+        if(user.isLogout && user.isSuccess) setIsLogged(false)
+        
+    }, [user.isLoading])    
+
+
+const handleSearch = (e:any) => {
+    e.preventDefault();
+   router.push(`/search?query=${searchValue}&page=1`)
+}
     return (
         <>
             <header className="px-4 py-4 bg-ctBlue-header relative" >
@@ -18,15 +56,15 @@ export default function Header() {
                         <div className="flex items-center">
                             <button className=" rounded-lg p-1">
                                 <Image
-                            src="/menu.png"
-                            width={24}
-                            height={24}
-                            alt=""
-                            />
+                                    src="/menu.png"
+                                    width={24}
+                                    height={24}
+                                    alt=""
+                                />
                                 {/* <FontAwesomeIcon icon={faBarsStaggered} /> */}
                             </button>
                         </div>
-                        <div className="flex flex-row gap-2">
+                        <div className="flex flex-row gap-2 cursor-pointer" onClick={()=>router.push("/")}>
                             <Image
                                 src="/logo-film.png"
                                 width={24}
@@ -36,8 +74,9 @@ export default function Header() {
                             <p className="font-bold text-xl text-center">Navy</p>
                         </div>
                     </div>
-                    <div className="flex-1 justify-center items-center ">
-                        <form className="max-w-md mx-auto">
+                                    
+                    <div className="flex-1 justify-center items-center " >
+                        <form className="max-w-md mx-auto" onSubmit={handleSearch}>
                             <label htmlFor="default-search" className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
                             <div className="relative focus:outline-none">
                                 <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -51,6 +90,7 @@ export default function Header() {
                                     className="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                     placeholder="Search..."
                                     required
+                                    onChange={(e) => setSearchValue(e.target.value)}
                                 />
                                 <button
                                     type="submit"
@@ -62,20 +102,30 @@ export default function Header() {
                         </form>
                     </div>
                     <div className="flex-1 flex justify-end items-center">
-                        <button
-                            type="button"
-                            className='text-white font-bold bg-ctBlue-logo py-2 px-4 hover:bg-ctBlue-logo_hover rounded-lg'
-                            onClick={onOpen}
+                        {!isLogged &&
+                            <button
+                                type="button"
+                                className='text-white font-bold bg-ctBlue-logo py-2 px-4 hover:bg-ctBlue-logo_hover rounded-lg'
+                                onClick={()=>setIsOpenLogin(true)}
 
-                        >
-                            Login
-                        </button>
+                            >
+                                Login
+                            </button>
+                        }
+                        {isLogged &&
+
+                            <UserDropDown isChangePassword={isChangePassword} setIsChangePassword={setIsChangePassword} />
+                        }
                     </div>
                 </div>
-              
+
             </header>
-                <Login isOpen={isOpen} onOpen={onOpen} onOpenChange={onOpenChange}/>
-            
+            {isOpenLogin &&
+                <ModalManager isOpen={isOpenLogin} setIsOpen={setIsOpenLogin} />
+            }
+             {isChangePassword &&
+                <ModalChangePassword isOpen={isChangePassword} setIsOpen={setIsChangePassword} />
+            }
         </>
     )
 }   

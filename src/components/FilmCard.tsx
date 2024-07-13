@@ -1,18 +1,21 @@
 'use client'
 import Image from 'next/image'
 import React from 'react'; // Thêm dòng này
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import { FilmIcon, MonitorIcon } from '@iconicicons/react'
 
 export default function FilmCard(data: any) {
   console.log('cardddddd', data.data)
-
-  const handleClick = () => {
-    // if (category === 'movie') {
-    //   router.push(`/movie/${id}`)
-    // } else if (category === 'tv') {
-    //   router.push(`/tv/${id}`)
-    // }
+  const  router = useRouter()
+  const handleClick = (e:any) => {
+    e.preventDefault()
+    if (data.data.type === 'movie') {
+      if(localStorage.getItem('movie')) localStorage.removeItem('movie')
+        else localStorage.setItem('movie',JSON.stringify(data.data))
+      router.push(`/movie/${data.data._id}`)
+    } else if (data.data.type === 'tvshow') {
+      router.push(`/tv/${data.data._id}`)
+    }
   }
   const renderCategoryIcon = (category: string) => {
     if (category === 'movie') {
@@ -47,7 +50,7 @@ export default function FilmCard(data: any) {
           unoptimized
         />
       </div>
-      <p className="mt-1 text-center dark:text-zinc-400 text-zinc-600 basis-1/2">
+      <p className="mt-1 text-center dark:text-zinc-400 text-zinc-600 basis-1/2  font-bold">
         {data.data.name}
       </p>
       <p className="mt-1 text-center dark:text-zinc-400 text-zinc-600 basis-1/4">
@@ -55,7 +58,7 @@ export default function FilmCard(data: any) {
       </p>
       <p className="flex justify-center items-end mt-1 dark:text-zinc-400 text-zinc-600 basis-1/4">
         {renderCategoryIcon(data.data.type)}
-        <span className="pl-[6px] pr-[6px]">
+        <span className="pl-[6px] pr-[6px] ">
           {renderCategoryText(data.data.type)}
         </span>
       </p>

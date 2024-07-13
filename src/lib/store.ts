@@ -1,12 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
 import movieReducer from './features/movie.slice'
 import tvReducer, { tv } from './features/tv.slice'
-
+import userReducer from './features/user.slice'
 export const makeStore = () => {
   return configureStore({
     reducer: {
       movieReducer,
-      tvReducer
+      tvReducer,
+      userReducer
     },
     
 
