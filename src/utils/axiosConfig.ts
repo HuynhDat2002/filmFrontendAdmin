@@ -1,7 +1,9 @@
 import axios from "axios";
 import { NextApiRequest,NextApiResponse } from "next";
 
-export const base_url = "http://localhost:5003/api"
+export const base_url = "https://localhost/film/api"
+const base_url_user = "https://localhost/user/api"
+
 
 interface Token {
     user: { _id: string };
@@ -18,7 +20,6 @@ export const getToken = (): Token => {
     };
 };
 
-const base_url_user = "http://localhost:5000/api"
 
 const createAxiosUserInstance = (token: Token) => {
     return axios.create({

@@ -2,12 +2,13 @@ import { base_url ,updateAxiosUserInstanceFilm} from '../../utils/axiosConfig';
 let axios = updateAxiosUserInstanceFilm()
 export const getMovies = async ()=>{
     try{
-
+        updateAxiosUserInstanceFilm()
         const response = await axios.get(`${base_url}/movie/getAllMovie`);
-        console.log(response.data)
+        console.log('dataaaaaaa')
         return response.data;
     }
     catch (error:any){
+        console.log('movie',error.response.data)
         throw error.response.data
     }
 }
@@ -27,7 +28,7 @@ export const search = async (data:{query:string,page:string})=>{
 export const getA = async (data:{id:string})=>{
     try{
 
-        const response = await axios.get(`${base_url}/movie/getMovie/${data.id}`);
+        const response = await axios.get(`/movie/getMovie/${data.id}`);
         console.log(response.data)
         return response.data;
     }

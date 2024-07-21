@@ -27,13 +27,15 @@ export default function MovieDetail() {
     const [actor, setActor] = useState("")
     const [director, setDirector] = useState("")
     const movie: any = useAppSelector((state) => state.movieReducer)
-    const user = localStorage.getItem("user") ? JSON.parse(localStorage.getItem("user") as string) : { user: { _id: "" }, tokens: "" }
+    const user = typeof window !== 'undefined' && JSON.parse(localStorage.getItem("user") as string) ? JSON.parse(localStorage.getItem("user") as string) : { user: { _id: "" }, tokens: "" }
     const params = useParams<{ id: string }>()
-
+    
     useEffect(() => {
-        dispatch(getA({ id: params?.id as string }))
-        dispatch(getRatings({ filmId: params?.id as string }))
-    }, [])
+        // if (params?.id!==undefined) {
+            dispatch(getA({ id: params?.id as string }))
+            dispatch(getRatings({ filmId: params?.id as string }))
+        // }
+    }, [params])
 
     useEffect(() => {
         if (movie.isSuccess && movie.isGetA) {
@@ -72,9 +74,7 @@ export default function MovieDetail() {
     };
 
 
-    console.log(`posterrrr`, poster)
-    console.log(`playinggg`, playing)
-    console.log(`rating average`, rating)
+    
     const handleRating = (newRating: number) => {
         dispatch(ratingMovie({ filmId: params?.id as string, rating: newRating }))
         setRating(newRating)
@@ -129,8 +129,6 @@ export default function MovieDetail() {
                     <p>Full</p>
                 </div>
             </div>
-
-            
             <div id="infomovie" className="mt-5  flex flex-row border-1 shadow-lg  rounded-lg shadow-lg">
                 <div className="flex flex-col mx-5">
 
