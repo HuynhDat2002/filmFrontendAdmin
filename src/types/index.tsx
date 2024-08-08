@@ -36,7 +36,12 @@ export interface VerifySignProps{
     isOpen:boolean, onClose:()=>void, openLogin:()=>void,openSuccess:()=>void
 }
 export interface SuccessProps{
-    isOpen:boolean, onClose:()=>void, openLogin:()=>void
+    isOpen:boolean, onClose:()=>void
+
+}
+
+export interface ErrorProps{
+    isOpen:boolean, onClose:()=>void,message:string
 
 }
 
@@ -47,4 +52,16 @@ export interface SuccessChangePasswordProps{
 
 export interface ChangePasswordProps{
     isOpen:boolean, onClose:()=>void,openSuccess:()=>void
+}
+
+export interface CommentProps{
+    comment_left: number,
+    comment_right: number,
+    comment_content: string,
+    comment_parentId: string,
+    comment_user:any,
+    comment_filmId:string,
+    _id:string,
+    createdAt:any,
+    updatedAt:any
 }

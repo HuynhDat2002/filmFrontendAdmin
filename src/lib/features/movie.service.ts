@@ -1,15 +1,14 @@
 import { base_url ,updateAxiosUserInstanceFilm} from '../../utils/axiosConfig';
 let axios = updateAxiosUserInstanceFilm()
-export const getMovies = async ()=>{
+export const getMovies = async (page:number)=>{
     try{
         updateAxiosUserInstanceFilm()
-        const response = await axios.get(`${base_url}/movie/getAllMovie`);
-        console.log('dataaaaaaa')
+        const response = await axios.get(`${base_url}/movie/getAllMovie?page=${page}`);
         return response.data;
     }
     catch (error:any){
-        console.log('movie',error.response.data)
-        throw error.response.data
+        console.log('movie',error)
+        throw error.response.data ? error.response.data : error
     }
 }
 
@@ -21,7 +20,7 @@ export const search = async (data:{query:string,page:string})=>{
         return response.data;
     }
     catch (error:any){
-        throw error.response.data
+        throw error.response.data ? error.response.data : error
     }
 }
 
@@ -33,7 +32,7 @@ export const getA = async (data:{id:string})=>{
         return response.data;
     }
     catch (error:any){
-        throw error.response.data
+        throw error.response.data ? error.response.data : error
     }
 }
 
@@ -45,7 +44,8 @@ export const ratingMovie = async (data:{filmId:string,rating:number})=>{
         return response.data;
     }
     catch (error:any){
-        throw error
+        console.log('error rating',error)
+        throw error.response.data ? error.response.data : error
     }
 }
 
@@ -58,6 +58,31 @@ export const getRatings = async (data:{filmId:string})=>{
         return response.data;
     }
     catch (error:any){
-        throw error
+        throw error.response.data ? error.response.data : error
+    }
+}
+
+export const getPageTotal = async ()=>{
+    try{
+        updateAxiosUserInstanceFilm()
+
+        const response = await axios.get(`/movie/getPageTotal`);
+        console.log(response.data)
+        return response.data;
+    }
+    catch (error:any){
+        throw error.response.data ? error.response.data : error
+    }
+}
+
+export const createMovie = async (data:{urlEmbed:string})=>{
+    try{
+        await updateAxiosUserInstanceFilm()
+        const response = await axios.post(`/movie/createMovie`,data);
+        console.log(response.data)
+        return response.data;
+    }
+    catch (error:any){
+        throw error.response.data ? error.response.data : error
     }
 }

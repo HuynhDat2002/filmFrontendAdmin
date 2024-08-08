@@ -45,11 +45,11 @@ export default function SignUp({ isOpen, onClose, openLogin,openVerifySign}: Sig
             confirmPassword: ""
         },
         validationSchema: schema,
-        onSubmit: async (value) => {
+        onSubmit: async (values) => {
            await dispatch(sendOTP({
-            name:value.name,
-            email:value.email,
-            password:value.password
+            name:values.name,
+            email:values.email,
+            password:values.password
            }))       
         },
     });

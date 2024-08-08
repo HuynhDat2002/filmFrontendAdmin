@@ -6,47 +6,58 @@ import Login from "./Login";
 import { useDisclosure } from '@nextui-org/use-disclosure'
 import UserDropDown from './UserDropDown'
 import ModalManager from './ModalManager'
-import { useAppSelector,useAppDispatch } from "@/lib/hooks";
+import { useAppSelector, useAppDispatch } from "@/lib/hooks";
 import { checkLogin } from "@/lib/features/user.slice";
 import { resetState } from "@/lib/features/user.slice";
 import ModalChangePassword from './ModalChangePassword'
-import {getUser} from '@/lib/features/user.slice'
-import {useRouter} from 'next/navigation'
-import {useFormik} from 'formik'
+import { getUser } from '@/lib/features/user.slice'
+import { useRouter } from 'next/navigation'
+import { useFormik } from 'formik'
 import * as yup from 'yup'
-export default function Header() {
+// import Menu from "./NavbarMenu";
+export default function Header({isOpenMenu,setIsOpenMenu}:{isOpenMenu:boolean,setIsOpenMenu:any}) {
     const [isOpenLogin, setIsOpenLogin] = useState(false)
     const { isOpen, onOpen, onOpenChange } = useDisclosure()
     const [isLogged, setIsLogged] = useState(false)
-    const [isModal,setIsModal] = useState(false)
-    const [searchValue,setSearchValue] = useState("")
-const [isChangePassword,setIsChangePassword] = useState(false)
+    const [isModal, setIsModal] = useState(false)
+    const [searchValue, setSearchValue] = useState("")
+    const [isChangePassword, setIsChangePassword] = useState(false)
+    const [isOpenError,setIsOpenError] = useState(false)
     const router = useRouter()
-  const dispatch = useAppDispatch()
+    const dispatch = useAppDispatch()
 
-  
-  useEffect(()=>{
 
-      dispatch(checkLogin())
-  },[])
+    useEffect(() => {
+
+        dispatch(checkLogin())
+        
+    }, [])
     const user: any = useAppSelector((state) => state.userReducer)
     useEffect(() => {
-        
+
         if (user.isSuccess && user.isLogin) setIsLogged(true)
         if (user.isSuccess && user.isCheck) setIsLogged(true)
-        if (user.isSuccess && user.isCheck) {setIsLogged(true);dispatch(getUser())}
-        if(user.isCheck && user.isError) {
+        if (user.isSuccess && user.isCheck) { setIsLogged(true); dispatch(getUser()) }
+        if (user.isCheck && user.isError) {
             localStorage.clear()
+            setIsLogged(false)
+            setIsOpenLogin(true)
         }
-        if(user.isLogout && user.isSuccess) setIsLogged(false)
-        
-    }, [user.isLoading])    
+        if (user.isLogout && user.isSuccess) setIsLogged(false)
+
+    }, [user.isLoading])
 
 
-const handleSearch = (e:any) => {
-    e.preventDefault();
-   router.push(`/search?query=${searchValue}&page=1`)
-}
+    const handleSearch = (e: any) => {
+        e.preventDefault();
+        router.push(`/search?query=${searchValue}&page=1`)
+    }
+    const handleOpenMenu = ()=>{
+        if(isOpenMenu) setIsOpenMenu(false)
+        else setIsOpenMenu(true)
+    }
+
+    console.log('isLogin',isLogged)
     return (
         <>
             <header className="px-4 py-4 bg-ctBlue-header relative" >
@@ -54,17 +65,16 @@ const handleSearch = (e:any) => {
                     <div className="flex-1 flex justify-start items-center gap-4">
 
                         <div className="flex items-center">
-                            <button className=" rounded-lg p-1">
+                            <button className=" rounded-lg p-1" onClick={handleOpenMenu}>
                                 <Image
                                     src="/menu.png"
                                     width={24}
                                     height={24}
                                     alt=""
                                 />
-                                {/* <FontAwesomeIcon icon={faBarsStaggered} /> */}
                             </button>
                         </div>
-                        <div className="flex flex-row gap-2 cursor-pointer" onClick={()=>router.push("/")}>
+                        <div className="flex flex-row gap-2 cursor-pointer" onClick={() => router.push("/")}>
                             <Image
                                 src="/logo-film.png"
                                 width={24}
@@ -74,7 +84,7 @@ const handleSearch = (e:any) => {
                             <p className="font-bold text-xl text-center">Navy</p>
                         </div>
                     </div>
-                                    
+
                     <div className="flex-1 justify-center items-center " >
                         <form className="max-w-md mx-auto" onSubmit={handleSearch}>
                             <label htmlFor="default-search" className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
@@ -106,7 +116,7 @@ const handleSearch = (e:any) => {
                             <button
                                 type="button"
                                 className='text-white font-bold bg-ctBlue-logo py-2 px-4 hover:bg-ctBlue-logo_hover rounded-lg'
-                                onClick={()=>setIsOpenLogin(true)}
+                                onClick={() => setIsOpenLogin(true)}
 
                             >
                                 Login
@@ -123,9 +133,13 @@ const handleSearch = (e:any) => {
             {isOpenLogin &&
                 <ModalManager isOpen={isOpenLogin} setIsOpen={setIsOpenLogin} />
             }
-             {isChangePassword &&
+            {isChangePassword &&
                 <ModalChangePassword isOpen={isChangePassword} setIsOpen={setIsChangePassword} />
             }
+    {/* {
+        isOpenMenu &&
+        <Menu />
+    } */}
         </>
     )
 }   

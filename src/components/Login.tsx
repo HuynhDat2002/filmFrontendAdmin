@@ -3,16 +3,14 @@ import React, { useState, useEffect } from "react";
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, Checkbox, Link, Spinner } from "@nextui-org/react";
 import { useDisclosure } from '@nextui-org/use-disclosure'
 import { LoginProps } from "@/types";
-// import { MailIcon } from './MailIcon';
-// import { LockIcon } from './LockIcon';
+
 import { useFormik } from 'formik'
 import * as yup from 'yup'
 import { useAppDispatch, useAppSelector } from "@/lib/hooks"
 import { logIn } from "@/lib/features/user.slice";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRightToBracket, faEnvelope, faLock, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
-// import {Button} from '@nextui-org/button'
-import SignUp from './SignUp'
+import { useRouter } from "next/navigation";
 
 export default function Login({ isOpen, onClose, openSignUp, openForgot }: LoginProps) {
     const [isOpenSign, setIsOpenSign] = useState(false)
@@ -21,6 +19,7 @@ export default function Login({ isOpen, onClose, openSignUp, openForgot }: Login
     const dispatch = useAppDispatch()
     const user: any = useAppSelector((state) => state.userReducer)
     const signUpDisclosure = useDisclosure()
+    const router = useRouter()
     let schema = yup.object().shape({
         email: yup
             .string()
@@ -39,16 +38,11 @@ export default function Login({ isOpen, onClose, openSignUp, openForgot }: Login
             await dispatch(logIn(value))
         },
     });
-    // const handleSubmit = async (e: any) => {
-    //     e.preventDefault();
-    //     await formik.handleSubmit();
-    //     if (user.isSuccess === true) { dispatch(resetState());onClose()}
 
-    // };
 
     useEffect(() => {
         if(user.isLogin){
-            if (user.isSuccess ) onClose()
+            if (user.isSuccess ) {onClose();window.location.reload()}
             if(user.isError &&  Object.keys(user.message).length === 0) {setError(true);setMessageError("Server Error")}
             if(user.isError && Object.keys(user.message).length >0)  {setError(true);setMessageError(`${user.message.message}`)}
         }
@@ -138,7 +132,7 @@ export default function Login({ isOpen, onClose, openSignUp, openForgot }: Login
 
                                 </ModalBody>
                                 <ModalFooter className="flex flex-row">
-                                    <Button className="text-gray-500 hover:text-ctBlue-logo flex basis-1/2 px-1" type="button" onClick={openSignUp}>
+                                    {/* <Button className="text-gray-500 hover:text-ctBlue-logo flex basis-1/2 px-1" type="button" onClick={openSignUp}>
 
                                         <FontAwesomeIcon icon={faRightToBracket} className="pr-2" />
                                         <span className="text-center">Sign Up</span>
@@ -148,7 +142,7 @@ export default function Login({ isOpen, onClose, openSignUp, openForgot }: Login
 
                                     <Button color="danger" variant="flat" onPress={onClose} className="basis1/4">
                                         Close
-                                    </Button>
+                                    </Button> */}
                                     <Button className="bg-ctBlue-header text-white basis-1/4" type="submit">
                                         Sign in
                                     </Button>
@@ -160,6 +154,7 @@ export default function Login({ isOpen, onClose, openSignUp, openForgot }: Login
                     )}
                 </ModalContent>
             </Modal>
+            
         </>
     );
 }

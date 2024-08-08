@@ -13,6 +13,9 @@ export default function UserDropDown({isChangePassword,setIsChangePassword}:{isC
   const handleChangePassword = ()=>{
     setIsChangePassword(true)
   }
+  useEffect(()=>{
+    if(user.isSuccess && user.isLogout) window.location.reload()
+  },[user.isLoading])
   return (
     <div className="flex items-center gap-4">
       <Dropdown placement="bottom-end">

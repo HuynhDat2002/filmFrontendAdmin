@@ -7,9 +7,9 @@ import * as tvService from './tv.service'
 export const getAllTV = createAsyncThunk(
     "tv/get-tvshows",
 
-    async (_,thunkAPI) => {
+    async (page:number,thunkAPI) => {
       try {
-        return await tvService.getAllTV();
+        return await tvService.getAllTV(page);
       } catch (error) {
         throw thunkAPI.rejectWithValue(error);
       }
@@ -65,16 +65,115 @@ export const getAllTV = createAsyncThunk(
     }
   );
 
+
+  export const getPageTotal = createAsyncThunk(
+    "tv/getPageTotal",
+  
+    async (_,thunkAPI) => {
+      try {
+        return await tvService.getPageTotal();
+      } catch (error) {
+        throw thunkAPI.rejectWithValue(error);
+      }
+    }
+  );
+
+  export const createTV = createAsyncThunk(
+    "tv/createTV",
+  
+    async (data:{urlEmbed:string},thunkAPI) => {
+      try {
+        return await tvService.createTV(data);
+      } catch (error) {
+        throw thunkAPI.rejectWithValue(error);
+      }
+    }
+  );
 const initialState={
     tvs: {
       message:"",
       status:200,
-      metadata:[]
+      metadata:[
+        {
+          _id: "",
+          name: "",
+          slug: "",
+          origin_name: "",
+          content: "",
+          poster_url: "",
+          thumb_url: "",
+          trailer: "",
+          time: "",
+          lang: "",
+          year: 0,
+          actor: [""],
+          director: [""],
+          category: [{
+            name: "",
+            slug: "",
+            _id: ""
+          }],
+          country: [{
+            name: "",
+            slug: "",
+            _id: ""
+          }],
+          quality: "",
+          episode_current: "",
+    
+          episode_total: 0,
+          episodes: [{
+            name: "",
+            slug: "",
+            video: "",
+            _id: ""
+          }]
+        }
+      ]
     },
     tv: {
       message:"",
       status:200,
-      metadata:{}
+      metadata:{
+        _id: "",
+        name: "",
+        slug: "",
+        origin_name: "",
+        content: "",
+        poster_url: "",
+        thumb_url: "",
+        trailer: "",
+        time: "",
+        lang: "",
+        year: 0,
+        actor: [""],
+        director: [""],
+        category: [{
+          name: "",
+          slug: "",
+          _id: ""
+        }],
+        country: [{
+          name: "",
+          slug: "",
+          _id: ""
+        }],
+        quality: "",
+        episode_current: "",
+  
+        episode_total: 0,
+        episodes: [{
+          name: "",
+          slug: "",
+          video: "",
+          _id: ""
+        }]
+      }
+    },
+    tvLength:{
+      metadata:{
+        tvLength:0
+      }
     },
     ratings:{
       _id:"",
@@ -89,7 +188,9 @@ const initialState={
     isGetA:false,
     isRating:false,
     isGetRatings:false,
-    message: "",
+    isGetPageTotal:false,
+    isCreateTV:false,
+    message: {message:""}||"",
     
 }
 
@@ -110,6 +211,8 @@ export const tv = createSlice({
           state.isGetA=false
           state.isRating=false
           state.isGetRatings=false
+          state.isGetPageTotal = false
+          state.isCreateTV=false
         })
         .addCase(getAllTV.fulfilled, (state, action) => {
           state.isLoading = false;
@@ -125,7 +228,7 @@ export const tv = createSlice({
           state.isSuccess = false;
           state.isGetAll = true
 
-          state.message = action.error.message as string;
+          state.message = action.payload as any;
         })
         
 
@@ -136,6 +239,8 @@ export const tv = createSlice({
           state.isGetA=false
           state.isRating=false
           state.isGetRatings=false
+          state.isGetPageTotal = false
+          state.isCreateTV=false
 
 
 
@@ -155,7 +260,7 @@ export const tv = createSlice({
           state.isSuccess = false;
           state.isSearch=true;
 
-          state.message = action.error.message as string;
+          state.message = action.payload as any;
         })
 
 
@@ -166,6 +271,8 @@ export const tv = createSlice({
           state.isGetA=false
           state.isRating=false
           state.isGetRatings=false
+          state.isGetPageTotal = false
+          state.isCreateTV=false
 
 
 
@@ -175,17 +282,19 @@ export const tv = createSlice({
           state.isError = false;
           state.isSuccess = true;
           state.isGetA=true;
+          state.isGetRatings=false
 
           
-          state.tvs = action.payload;
+          state.tv = action.payload;
         })
         .addCase(getA.rejected, (state, action) => {
           state.isLoading = false;
           state.isError = true;
           state.isSuccess = false;
           state.isGetA=true;
+          state.isGetRatings=false
 
-          state.message = action.error.message as string;
+          state.message = action.payload as any;
         })
 
 
@@ -196,6 +305,8 @@ export const tv = createSlice({
           state.isGetA=false
           state.isRating=false
           state.isGetRatings=false
+          state.isGetPageTotal = false
+          state.isCreateTV=false
 
 
 
@@ -214,7 +325,7 @@ export const tv = createSlice({
           state.isError = true;
           state.isSuccess = false;
           state.isRating=true;
-          state.message = action.error.message as string;
+          state.message = action.payload as any;
         })
 
         .addCase(getRatings.pending, (state) => {
@@ -224,6 +335,8 @@ export const tv = createSlice({
           state.isGetA=false
           state.isRating=false
           state.isGetRatings=false
+          state.isGetPageTotal = false
+          state.isCreateTV=false
 
 
 
@@ -233,7 +346,7 @@ export const tv = createSlice({
           state.isError = false;
           state.isSuccess = true;
           state.isGetRatings=true;
-
+state.isGetA=false
           
           state.ratings = action.payload;
         })
@@ -242,7 +355,72 @@ export const tv = createSlice({
           state.isError = true;
           state.isSuccess = false;
           state.isGetRatings=true;
-          state.message = action.error.message as string;
+state.isGetA=false
+
+          state.message = action.payload as any;
+        })
+
+
+
+        .addCase(getPageTotal.pending, (state) => {
+          state.isLoading = true;
+          state.isGetAll = false;
+          state.isSearch=false;
+          state.isGetA=false
+          state.isRating=false
+          state.isGetRatings=false
+          state.isGetPageTotal = false
+          state.isCreateTV=false
+
+
+
+        })
+        .addCase(getPageTotal.fulfilled, (state, action) => {
+          state.isLoading = false;
+          state.isError = false;
+          state.isSuccess = true;
+          state.isGetPageTotal=true;          
+          state.tvLength = action.payload;
+        })
+        .addCase(getPageTotal.rejected, (state, action) => {
+          state.isLoading = false;
+          state.isError = true;
+          state.isSuccess = false;
+          state.isGetPageTotal=true;
+          state.message = action.payload as any;
+        })
+
+
+        .addCase(createTV.pending, (state) => {
+          state.isLoading = true;
+          state.isGetAll = false;
+          state.isSearch=false;
+          state.isGetA=false
+          state.isRating=false
+          state.isGetRatings=false
+          state.isGetPageTotal = false
+          state.isCreateTV=false
+
+
+
+        })
+        .addCase(createTV.fulfilled, (state, action) => {
+          state.isLoading = false;
+          state.isError = false;
+          state.isSuccess = true;
+          state.isGetPageTotal=false; 
+          state.isCreateTV=true
+
+          state.tvLength = action.payload;
+        })
+        .addCase(createTV.rejected, (state, action) => {
+          state.isLoading = false;
+          state.isError = true;
+          state.isSuccess = false;
+          state.isGetPageTotal=false;
+          state.isCreateTV=true
+
+          state.message = action.payload as any;
         })
          .addCase(resetState, () => initialState);
     },

@@ -19,10 +19,11 @@ export default function FilmList(tab: any) {
 
   useEffect(() => {
     // Gọi hành động getMovies khi component được mount
-    dispatch(getMovies());
-    dispatch(getAllTV());
+    
+    dispatch(getMovies(1));
+    dispatch(getAllTV(1));
 
-  }, [user.isSuccess]);
+  }, [user]);
 
   const renderCategoryIcon = (category: string) => {
     if (category === 'movie') {

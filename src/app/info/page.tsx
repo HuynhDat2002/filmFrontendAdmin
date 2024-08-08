@@ -59,7 +59,7 @@ const router = useRouter()
 
   return (
     <div className="mt-5">
-      <div className=" mx-auto w-[40%]">
+      <div className=" mx-auto w-[100%] mb-5">
         <form onSubmit={formik.handleSubmit} >
           <div className="flex justify-center gap-1 font-bold my-5">Thông tin cá nhân</div>
           <div className='relative flex flex-col gap-3 font-bold'>

@@ -1,22 +1,26 @@
 import axios from "axios";
-import { NextApiRequest,NextApiResponse } from "next";
+import { NextApiRequest, NextApiResponse } from "next";
 
 export const base_url = "https://localhost/film/api"
-const base_url_user = "https://localhost/user/api"
+const base_url_user = "https://localhost/admin/api"
 
 
 interface Token {
     user: { _id: string };
-    tokens: string;
+    tokens: {accessToken:string,refreshToken:string};
 }
 
 export const getToken = (): Token => {
-    if (typeof window !== "undefined" && localStorage.getItem("user") as string) {
-        return JSON.parse(localStorage.getItem("user") as string) as Token;
+    const user = localStorage.getItem("user") as string;
+    if (user) {
+
+        console.log('getToken',JSON.parse(user))
+        return JSON.parse(user) as Token;
+
     }
     return {
         user: { _id: "" },
-        tokens: ""
+        tokens: {accessToken:"",refreshToken:""}
     };
 };
 
@@ -27,7 +31,7 @@ const createAxiosUserInstance = (token: Token) => {
         withCredentials: true,
         headers: {
             'x-client-id': token.user._id || '',
-            'authorization': token.tokens || '',
+            'authorization': token.tokens.accessToken || '',
             Accept: "application/json",
         },
     });
@@ -39,13 +43,13 @@ const createAxiosUserInstanceFilm = (token: Token) => {
         withCredentials: true,
         headers: {
             'x-client-id': token.user._id || '',
-            'authorization': token.tokens || '',
+            'authorization': token.tokens.accessToken || '',
             Accept: "application/json",
         },
     });
 };
-  
-  
+
+
 
 export const updateAxiosUserInstance = () => {
     const axiosUser = createAxiosUserInstance(getToken());

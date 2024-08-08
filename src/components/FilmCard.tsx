@@ -10,8 +10,8 @@ export default function FilmCard(data: any) {
   const handleClick = (e:any) => {
     e.preventDefault()
     if (data.data.type === 'movie') {
-      if(localStorage.getItem('movie')) localStorage.removeItem('movie')
-        else localStorage.setItem('movie',JSON.stringify(data.data))
+      // if(localStorage.getItem('movie')) localStorage.removeItem('movie')
+      //   else localStorage.setItem('movie',JSON.stringify(data.data))
       router.push(`/movie/${data.data._id}`)
     } else if (data.data.type === 'tvshow') {
       router.push(`/tv/${data.data._id}`)
@@ -36,6 +36,7 @@ export default function FilmCard(data: any) {
 
 
     <div
+      key={data.data._id}
       onClick={handleClick}
       className='w-[183px] h-[349px] border-2  shadow-lg rounded-lg flex flex-col hover:cursor-pointer'
     >
@@ -50,7 +51,7 @@ export default function FilmCard(data: any) {
           unoptimized
         />
       </div>
-      <p className="mt-1 text-center dark:text-zinc-400 text-zinc-600 basis-1/2  font-bold">
+      <p className="mt-1 text-center dark:text-zinc-400 text-zinc-600 basis-1/2  font-bold line-clamp-2">
         {data.data.name}
       </p>
       <p className="mt-1 text-center dark:text-zinc-400 text-zinc-600 basis-1/4">

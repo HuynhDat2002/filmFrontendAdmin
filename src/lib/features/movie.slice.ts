@@ -7,10 +7,10 @@ import * as movieService from './movie.service'
 export const getMovies = createAsyncThunk(
     "movie/get-movies",
 
-    async (_,thunkAPI) => {
+    async (page:number,thunkAPI) => {
       try {
         console.log('hiiii')
-        return await movieService.getMovies();
+        return await movieService.getMovies(page);
       } catch (error) {
         throw thunkAPI.rejectWithValue(error);
       }
@@ -67,18 +67,101 @@ export const getRatings = createAsyncThunk(
   }
 );
 
+export const getPageTotalMovie = createAsyncThunk(
+  "movie/getPageTotal",
 
+  async (_,thunkAPI) => {
+    try {
+      return await movieService.getPageTotal();
+    } catch (error) {
+      throw thunkAPI.rejectWithValue(error);
+    }
+  }
+);
+
+
+export const createMovie = createAsyncThunk(
+  "movie/createMovie",
+
+  async (data:{urlEmbed:string},thunkAPI) => {
+    try {
+      return await movieService.createMovie(data);
+    } catch (error) {
+      throw thunkAPI.rejectWithValue(error);
+    }
+  }
+);
 const initialState={
     movies: {
       message:"",
       status:200,
-      metadata:[]
+      metadata:[{
+        _id:"",
+        name: "",
+        slug: "",
+        origin_name:"" ,
+        content: "",
+        poster_url: "",
+        thumb_url:"",
+        trailer: "",
+        time: "",
+        lang: "",
+        year: 0,
+        actor: [""],
+        director: [""],
+        category: [{
+          name: "",
+          slug: "",
+          _id: ""
+      }],
+        country: [{
+          name: "",
+          slug: "",
+          _id: ""
+        }],
+        quality: "",
+        episode_current:"" ,
+        video: "",
+      }]
+    },
+    movieLength:{
+      metadata:{
+        movieLength:0
+      }
     },
     movie: {
       message:"",
       status:200,
-      metadata:{}
+      metadata:{
+        _id:"",
+        name: "",
+        slug: "",
+        origin_name:"" ,
+        content: "",
+        poster_url: "",
+        thumb_url:"",
+        trailer: "",
+        time: "",
+        lang: "",
+        year: 0,
+        actor: [""],
+        director: [""],
+        category: [{
+          name: "",
+          slug: "",
+          _id: ""
+      }],
+        country: [{
+          name: "",
+          slug: "",
+          _id: ""
+        }],
+        quality: "",
+        episode_current:"" ,
+        video: ""
+      }
     },
+
     ratings:{
       _id:"",
       filmId:"",
@@ -92,7 +175,9 @@ const initialState={
     isGetA:false,
     isRating:false,
     isGetRatings:false,
-    message: {}||"",
+    isGetPageTotal:false,
+    isCreateMovie:false,
+    message: {message:""}||"",
     
 }
 
@@ -113,6 +198,9 @@ export const movie = createSlice({
           state.isGetA=false
           state.isRating=false
           state.isGetRatings=false
+          state.isGetPageTotal=false
+    state.isCreateMovie=false
+
         })
         .addCase(getMovies.fulfilled, (state, action) => {
           state.isLoading = false;
@@ -138,6 +226,8 @@ export const movie = createSlice({
           state.isGetA=false
           state.isRating=false
           state.isGetRatings=false
+          state.isGetPageTotal=false
+          state.isCreateMovie=false
 
 
         })
@@ -166,8 +256,8 @@ export const movie = createSlice({
           state.isGetA=false
           state.isRating=false
           state.isGetRatings=false
-
-
+          state.isGetPageTotal=false
+          state.isCreateMovie=false
         })
         .addCase(getA.fulfilled, (state, action) => {
           state.isLoading = false;
@@ -193,6 +283,8 @@ export const movie = createSlice({
           state.isGetA=false
           state.isRating=false
           state.isGetRatings=false
+          state.isGetPageTotal=false
+          state.isCreateMovie=false
 
 
         })
@@ -219,6 +311,8 @@ export const movie = createSlice({
           state.isGetA=false
           state.isRating=false
           state.isGetRatings=false
+          state.isGetPageTotal=false
+          state.isCreateMovie=false
 
 
         })
@@ -236,6 +330,70 @@ export const movie = createSlice({
           state.isSuccess = false;
           state.isGetRatings=true
           state.isGetA=false
+
+          state.message = action.payload as any;
+        })
+
+        .addCase(getPageTotalMovie.pending, (state) => {
+          state.isLoading = true;
+          state.isGetAll=false
+          state.isSearch=false
+          state.isGetA=false
+          state.isRating=false
+          state.isGetRatings=false
+          state.isGetPageTotal=false
+          state.isCreateMovie=false
+
+
+        })
+        .addCase(getPageTotalMovie.fulfilled, (state, action) => {
+          state.isLoading = false;
+          state.isError = false;
+          state.isSuccess = true;
+          state.isGetPageTotal=true
+          state.isGetA=false
+          state.movieLength = action.payload;
+        })
+        .addCase(getPageTotalMovie.rejected, (state, action) => {
+          state.isLoading = false;
+          state.isError = true;
+          state.isSuccess = false;
+          state.isGetPageTotal=true
+          state.isGetA=false
+
+          state.message = action.payload as any;
+        })
+
+        .addCase(createMovie.pending, (state) => {
+          state.isLoading = true;
+          state.isGetAll=false
+          state.isSearch=false
+          state.isGetA=false
+          state.isRating=false
+          state.isGetRatings=false
+          state.isGetPageTotal=false
+          state.isCreateMovie=false
+
+
+        })
+        .addCase(createMovie.fulfilled, (state, action) => {
+          state.isLoading = false;
+          state.isError = false;
+          state.isSuccess = true;
+          state.isGetPageTotal=false
+          state.isCreateMovie=true
+
+          state.isGetA=false
+          state.movieLength = action.payload;
+        })
+        .addCase(createMovie.rejected, (state, action) => {
+          state.isLoading = false;
+          state.isError = true;
+          state.isSuccess = false;
+          state.isGetPageTotal=false
+          state.isGetA=false
+          state.isCreateMovie=true
+
 
           state.message = action.payload as any;
         })

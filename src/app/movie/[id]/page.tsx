@@ -11,9 +11,12 @@ import { faPlay } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Rating as ReactRating } from '@smastrom/react-rating'
 import { ratingMovie, getRatings } from "@/lib/features/movie.slice"
-import Comment from "@/components/Comment"
+import CommentList from "@/components/CommentList"
+import { getCommentByFilm } from "@/lib/features/comment.slice"
 import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, Checkbox, Link, Spinner } from "@nextui-org/react";
-
+import { getToken } from "@/utils/axiosConfig"
+import ErrorModal from "@/components/ErrorModal"
+import VideoPlayer from '@/components/Player'
 export default function MovieDetail() {
     const dispatch = useAppDispatch()
     const [src, setSrc] = useState("")
@@ -21,77 +24,84 @@ export default function MovieDetail() {
     const [playing, setPlaying] = useState(false);
     const [rating, setRating] = useState(0)
     const [ratingAverage, setRatingAverage] = useState(0)
-    const [country, setCountry] = useState("")
-    const [type, setType] = useState("")
-    const [category, setCategory] = useState("")
-    const [actor, setActor] = useState("")
-    const [director, setDirector] = useState("")
-    const movie: any = useAppSelector((state) => state.movieReducer)
-    const user = typeof window !== 'undefined' && JSON.parse(localStorage.getItem("user") as string) ? JSON.parse(localStorage.getItem("user") as string) : { user: { _id: "" }, tokens: "" }
+
+    const [country, setCountry] = useState("Đang cập nhật")
+    const [type, setType] = useState("Đang cập nhật")
+    const [category, setCategory] = useState("Đang cập nhật")
+    const [actor, setActor] = useState("Đang cập nhật")
+    const [director, setDirector] = useState("Đang cập nhật")
+    const movieState: any = useAppSelector((state) => state.movieReducer)
+    const userState = useAppSelector((state) => state.userReducer)
+    const user = getToken()
     const params = useParams<{ id: string }>()
-    
+    const comment: any = useAppSelector((state) => state.commentReducer)
+    const [comments, setComments] = useState([])
+    const [quality, setQuality] = useState("")
+    const [messageError, setMessageError] = useState("")
+    const [isError, setIsError] = useState(false)
     useEffect(() => {
-        // if (params?.id!==undefined) {
-            dispatch(getA({ id: params?.id as string }))
-            dispatch(getRatings({ filmId: params?.id as string }))
+        if (movieState.movie.metadata._id)
+            dispatch(getCommentByFilm({ filmId: params?.id as string }))
+    }, [movieState.isLoading, params])
+
+    useEffect(() => {
+        if (comment.isSuccess && comment.isGetCommentByFilm)
+            setComments(comment.comments?.metadata.filter((comment: any) => {
+                return !comment.comment_parentId
+            }));
+
+    }, [comment.isLoading])
+    console.log('comments', comments)
+
+    useEffect(() => {
+        // if (params?.id !== undefined) {
+        dispatch(getA({ id: params?.id as string }))
+        dispatch(getRatings({ filmId: params?.id as string }))
         // }
     }, [params])
 
-    useEffect(() => {
-        if (movie.isSuccess && movie.isGetA) {
-            setSrc(movie.movie.metadata.video);
-            setPoster(movie.movie.metadata.poster_url)
-
-
-            const countryString = movie.movie.metadata.country.map((item: any) => item.name)
-            setCountry(countryString.join(", "))
-            const directorString = movie.movie.metadata.director.map((item: any) => item)
-            setDirector(directorString.join(", "))
-
-            const actorString = movie.movie.metadata.actor.map((item: any) => item)
-            setActor(actorString.join(", "))
-            const categoryString = movie.movie.metadata.category.map((item: any) => item.name)
-            setCategory(categoryString.join(", "))
-
-            setType(movie.movie.metadata.type[0].toUpperCase() + movie.movie.metadata.type.slice(1))
+    useEffect(() => {    
+        if (movieState.isSuccess && movieState.isGetRatings) { setRatingAverage(movieState.ratings.metadata.ratingAverage) }
+        if (movieState.isError && movieState.isRating) {
+            setIsError(true)
+            setMessageError(movieState.message.message)
         }
-        if (movie.isSuccess && movie.isGetRatings) { setRatingAverage(movie.ratings.metadata.ratingAverage) }
-    }, [movie.isLoading])
-
+    }, [movieState])
 
     useEffect(() => {
-        if (movie.ratings.metadata) {
-            const userFound = movie.ratings.metadata.ratings.filter((r: any) => r.userId.toString() === user.user._id.toString())
+        if (movieState.isSuccess && movieState.isRating) {
+            const userFound = movieState.ratings.metadata.ratings.filter((r: any) => r.userId.toString() === user.user._id.toString())
             if (userFound.length > 0) {
                 console.log('userFoundddddd', userFound[0].rating)
                 setRating(userFound[0].rating as number)
             }
         }
-    }, [movie.ratings])
+    }, [movieState])
     const handlePlay = (e: any) => {
         e.preventDefault()
         setPlaying(true);
     };
 
 
-    
+
     const handleRating = (newRating: number) => {
         dispatch(ratingMovie({ filmId: params?.id as string, rating: newRating }))
         setRating(newRating)
     }
-
+    console.log('country', country)
     return (
         <div className="w-[95%]">
             <div className=" flex flex-col  mx-auto mt-10 shadow-lg">
 
                 {
-                    !playing && poster !== "" &&
+                    !playing &&
 
                     <div className="relative">
                         <img
-                            src={movie.movie.metadata.poster_url}
+                            src={movieState.movie.metadata?.poster_url}
                             alt="Movie poster"
                             className=""
+                            width={`100%`}
                         />
                         <button
                             onClick={handlePlay}
@@ -102,103 +112,36 @@ export default function MovieDetail() {
                     </div>
                 }
                 {playing &&
-                    <iframe
-                        src={movie.movie.metadata.video + "?autoplay=1"}
-                        className="w-full h-[calc(8/16*100vw)] flex justify-center items-center"
-                        frameBorder="0"
-                        allowFullScreen
-                        allow="autoplay"
-                    ></iframe>
+
+                    <VideoPlayer src={movieState.movie.metadata?.video} />
+
 
                 }
-                {
-
-                    !playing && poster === "" &&
-                    <iframe
-                        src={movie.movie.metadata.video + "?autoplay=1"}
-                        className="w-full h-[calc(8/16*100vw)] flex justify-center items-center"
-                        frameBorder="0"
-                        allowFullScreen
-
-                        allow="autoplay"
-                    // allow="autoPlay"
-                    ></iframe>
-                }
-                <div>
-                    <p>Tập</p>
-                    <p>Full</p>
-                </div>
             </div>
             <div id="infomovie" className="mt-5  flex flex-row border-1 shadow-lg  rounded-lg shadow-lg">
                 <div className="flex flex-col mx-5">
 
-                    <p className="flex justify-start text-start py-5 font-bold dark:text-white text-xl">{movie.movie.metadata.name}</p>
+                    <p className="flex justify-start text-start py-5 font-bold dark:text-white text-xl">{movieState.movie.metadata?.name}</p>
                     <div className="flex flex-row gap-2 mb-2">
                         <div className="text-ctBlue-logo">
-                            <p className="ring-1 ring-ctBlue-logo p-1">{movie.movie.metadata.quality}</p>
+                            <p className="ring-1 ring-ctBlue-logo p-1">{movieState.movie.metadata?.quality}</p>
                         </div>
                         <div className="flex items-center text-red-600">
-                            {movie.movie.metadata.time}
+                            {movieState.movie.metadata?.time}
                         </div>
                         <div className="flex flex-row gap-2 justify-center items-center content-center">
                             <ReactRating style={{ maxWidth: 100 }} value={rating} onChange={handleRating} />
                             <div>
-                                {movie.ratings.metadata?.ratingAverage}/5
+                                {movieState.ratings.metadata?.ratingAverage}/5
                             </div>
                         </div>
                         <div className="flex items-center text-gray-600">
-                            ({movie.movie.metadata.view} lượt xem)
+                            ({movieState.movie.metadata?.view} lượt xem)
                         </div>
                     </div>
                     <div className="text-gray-600">
-                        {movie.movie.metadata.content}
+                        {movieState.movie.metadata?.content}
                     </div>
-                    {/* <div className="flex flex-col">
-                        <div className="flex flex-row">
-                            <p className="pr-5">Loại:</p>
-                            <div>
-
-                                {type}
-                            </div>
-                        </div>
-                        <div className="flex flex-row">
-                            <p className="pr-5">Quốc gia:</p>
-                            <div>
-
-                                {country}
-                            </div>
-                        </div>
-                        <div className="flex flex-row">
-                            <p className="pr-5">Thể  loại:</p>
-                            <div>
-
-                                {category}
-                            </div>
-                        </div>
-                        <div className="flex flex-row">
-                            <p className="pr-5">Năm:</p>
-                            <div>
-
-                                {movie.movie.metadata.year}
-                            </div>
-
-                        </div>
-                        <div className="flex flex-row">
-                            <p className="pr-5">Đạo diễn:</p>
-                            <div>
-
-                                {director}
-                            </div>
-
-                        </div>
-                        <div className="flex flex-row">
-                            <p className="pr-5">Diễn viên:</p>
-                            <div>
-                                {actor}
-                            </div>
-
-                        </div>
-                        </div> */}
                     <div className="flex flex-row">
                         <div className="flex flex-col w-1/6">
                             <p className="pr-5">Loại:</p>
@@ -209,23 +152,40 @@ export default function MovieDetail() {
                             <p className="pr-5">Diễn viên:</p>
                         </div>
                         <div className="flex flex-col w-5/6">
+
                             <div>
-                                {type}
+                                {movieState.movie.metadata?.type}
                             </div>
                             <div>
-                                {country}
+                                {
+
+                                    movieState.movie.metadata?.country.map((item: any) => item.name).join(", ") !== "" && movieState.movie.metadata?.country.map((item: any) => item.name).join(", ") !== ", " ?
+                                        movieState.movie.metadata?.country.map((item: any) => item.name).join(", ") : "Đang cập nhật"
+                                }
                             </div>
                             <div>
-                                {category}
+                                {
+
+                                    movieState.movie.metadata?.category.map((item: any) => item.name).join(", ") !== "" && movieState.movie.metadata?.category.map((item: any) => item.name).join(", ") !== ", " ?
+                                        movieState.movie.metadata?.category.map((item: any) => item.name).join(", ") : "Đang cập nhật"
+                                }
                             </div>
                             <div>
-                                {movie.movie.metadata.year}
+                                {movieState.movie.metadata?.year ? movieState.movie.metadata.year : 2024}
                             </div>
                             <div>
-                                {director}
+                                {
+
+                                    movieState.movie.metadata?.director.map((item: any) => item.name).join(", ") !== "" && movieState.movie.metadata?.director.map((item: any) => item.name).join(", ") !== ", " ?
+                                        movieState.movie.metadata?.director.map((item: any) => item.name).join(", ") : "Đang cập nhật"
+                                }
                             </div>
                             <div>
-                                {actor}
+                                {
+
+                                    movieState.movie.metadata?.actor.map((item: any) => item).join(", ") !== "" && movieState.movie.metadata?.actor.map((item: any) => item.name).join(", ") !== ", " ?
+                                        movieState.movie.metadata?.actor.map((item: any) => item).join(", ") : "Đang cập nhật"
+                                }
                             </div>
                         </div>
                     </div>
@@ -233,8 +193,8 @@ export default function MovieDetail() {
 
                 <div className="flex justify-end w-[calc(12/9*100vh)] object-cover">
                     <Image
-                        src={movie.movie.metadata.thumb_url}
-                        alt={movie.movie.metadata.name}
+                        src={movieState.movie.metadata?.thumb_url}
+                        alt={movieState.movie.metadata?.name}
                         width={231}
                         height={231}
                         className="object-cover rounded-md h-full"
@@ -242,8 +202,15 @@ export default function MovieDetail() {
                     />
                 </div>
             </div>
+            <div className="mb-5">
 
-            <Comment/>
+                <CommentList commentRoots={comments} />
+            </div>
+            <div>
+                {isError &&
+                    <ErrorModal isOpen={isError} onClose={() => setIsError(false)} message={messageError} />
+                }
+            </div>
         </div>
     )
 }

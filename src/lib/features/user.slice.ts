@@ -81,10 +81,11 @@ export const sendOTP = createAsyncThunk(
   "user/sendotp",
   async (data: { name:string,email:string,password:string}, thunkAPI) => {
     try {
+      console.log('data sendOTP',data)
       return await userService.sendOTP(data);
     } catch (error) {
       throw thunkAPI.rejectWithValue(error);
-    }
+    } 
   }
 );
 
@@ -430,7 +431,7 @@ export const user = createSlice({
         state.isError = false;
         state.isSuccess = true;
         state.isSendOTP=true
-        state.user = action.payload; // Reset user state to initial
+        state.message = action.payload; // Reset user state to initial
         
       })
       
