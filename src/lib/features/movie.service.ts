@@ -8,7 +8,7 @@ export const getMovies = async (page:number)=>{
     }
     catch (error:any){
         console.log('movie',error)
-        throw error.response.data ? error.response.data : error
+        throw error
     }
 }
 
@@ -20,7 +20,7 @@ export const search = async (data:{query:string,page:string})=>{
         return response.data;
     }
     catch (error:any){
-        throw error.response.data ? error.response.data : error
+        throw error
     }
 }
 
@@ -32,7 +32,7 @@ export const getA = async (data:{id:string})=>{
         return response.data;
     }
     catch (error:any){
-        throw error.response.data ? error.response.data : error
+        throw error
     }
 }
 
@@ -45,7 +45,7 @@ export const ratingMovie = async (data:{filmId:string,rating:number})=>{
     }
     catch (error:any){
         console.log('error rating',error)
-        throw error.response.data ? error.response.data : error
+        throw error
     }
 }
 
@@ -58,7 +58,7 @@ export const getRatings = async (data:{filmId:string})=>{
         return response.data;
     }
     catch (error:any){
-        throw error.response.data ? error.response.data : error
+        throw error
     }
 }
 
@@ -71,7 +71,7 @@ export const getPageTotal = async ()=>{
         return response.data;
     }
     catch (error:any){
-        throw error.response.data ? error.response.data : error
+        throw error
     }
 }
 
@@ -83,6 +83,6 @@ export const createMovie = async (data:{urlEmbed:string})=>{
         return response.data;
     }
     catch (error:any){
-        throw error.response.data ? error.response.data : error
+        throw error
     }
 }
